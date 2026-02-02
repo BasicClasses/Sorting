@@ -375,3 +375,120 @@ int main() {
 
     return 0;
 }
+
+
+#include <iostream>
+
+
+const int SIZE_GAME{6}; //  размер поля
+const int number_of_moves {8}; // количество ходов
+int move_v[number_of_moves] = {2, 1, -1, -2, -2, -1,  1,  2}; // Ходы по вертикали
+int move_g[number_of_moves] =  {1, 2,  2,  1, -1, -2, -2, -1}; // Ходы по горизонтали
+bool solution_found = false; // Флаг, что поиск закончен. Для версии 1
+int array_game[SIZE_GAME][SIZE_GAME]{}; //  Массив поля игры
+
+using namespace std;
+
+// Вывод поля на экран
+void printArray(){
+    int last_step = SIZE_GAME * SIZE_GAME;
+    for (int i{}; i < SIZE_GAME; i++){
+        for (int j{}; j < SIZE_GAME; j++){
+            if (array_game[i][j] == last_step){
+                cout << "\033[31m"<<array_game[i][j]<<"\033[0m\t";
+            } else {
+                cout << array_game[i][j] << "\t";
+            }
+        }
+        cout << endl << endl << endl;
+    }
+}
+
+//  Проверка, что ход на эту ячейку возможен
+bool validMove(int v, int g, int space_num){
+    return (v >= 0 && v < SIZE_GAME && g >= 0 && g < SIZE_GAME && space_num == 0);
+}
+
+/ Сами ходы. Рекурсивная функция (Версия 1)
+void mapMoves(int v, int g, int move_count){
+    if (!solution_found){
+        //Проверка на полностью заполненую доску
+        if (move_count == SIZE_GAME * SIZE_GAME){
+            cout << "Решение найдено!" << endl << endl;
+            printArray();
+            solution_found = true;
+            return;
+        }
+        //Цикл из 8 возможных ходов
+        for (int i{}; i < number_of_moves; i++){
+            int new_v = v + move_v[i];
+            int new_g = g + move_g[i];
+            if (validMove(new_v, new_g, array_game[new_v][new_g])){
+                array_game[new_v][new_g] = move_count + 1;
+                mapMoves(new_v, new_g, move_count + 1);
+                array_game[new_v][new_g] = 0;
+            }
+        }
+    }
+}
+bool mapMoves_v2(int v, int g, int move_count){
+    
+    //Проверка на полностью заполненую доску
+    if (move_count == SIZE_GAME * SIZE_GAME){
+        return true;
+    }
+
+    //Цикл из 8 возможных ходов
+    for (int i{}; i < number_of_moves; i++){
+        int new_v = v + move_v[i];
+        int new_g = g + move_g[i];
+
+        if (validMove(new_v, new_g, array_game[new_v][new_g])){
+
+            array_game[new_v][new_g] = move_count + 1;
+
+            if (mapMoves_v2(new_v, new_g, move_count + 1)){
+                return true;
+            }
+            array_game[new_v][new_g] = 0;
+        }
+    }
+    return false;
+}
+
+int main(){
+    setlocale(LC_ALL, "rus");
+    int v{}, g{};
+    cout << "Введите координат коня по вертикали от 1 до "<< SIZE_GAME <<" >> ";
+    cin >> v;
+    cout << "Введите координат коня по горизонтали  от 1 до "<< SIZE_GAME <<" >> ";
+    cin >> g;
+
+    if (v < 1 || v > SIZE_GAME || g < 1 || g > SIZE_GAME)
+        cout << "Разрешены координаты от 1 до " << SIZE_GAME << " включительно" << endl;
+    /*else{
+        v--;
+        g--;
+        //Заполнение самого первого поля
+        array_game[v][g] = 1;
+        cout << "Идёт поиск..." << endl;
+        int move_count{1};
+        mapMoves(v, g, move_count);
+    }*/
+    else{
+        v--;
+        g--;
+        array_game[v][g] = 1; //Заполнение самого первого поля
+        cout << "Идёт поиск..." << endl;
+
+        if (mapMoves_v2(v, g, 1)){
+            cout << "Решение найдено!" << endl << endl;
+            printArray();
+        } else {
+            cout << "Что-то пошло не так!" << endl << endl;
+        }
+    }
+    return 0;
+}
+
+
